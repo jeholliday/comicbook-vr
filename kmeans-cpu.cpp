@@ -3,7 +3,7 @@
 cv::Mat kmeans(cv::Mat src, cv::Mat means, size_t k, size_t max_iterations){
   cv::Mat samples;
   cv::resize(src, samples, src.size()/4);
-  samples = samples.reshape(1, samples.total());
+  samples = samples.reshape(1, samples.rows * samples.cols);
   samples.convertTo(samples, CV_32F);
 
   cv::TermCriteria criteria(cv::TermCriteria::EPS | cv::TermCriteria::MAX_ITER, max_iterations, 1.0);
