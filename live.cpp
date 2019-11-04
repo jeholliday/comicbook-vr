@@ -81,6 +81,7 @@ int main(int argc, char** argv)
     if( waitKey(1) == 27 ) break; // stop capturing by pressing ESC
   }
   capture.stop();
+  kmeans_src.stop();
 
   return 0;
 }

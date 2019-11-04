@@ -43,8 +43,10 @@ void ImageCapture::stop(){
     stopped = true;
     pthread_mutex_unlock(&mutex);
     pthread_join(thread, NULL);
+    pthread_mutex_lock(&mutex);
     cap.release();
-  }else{
-    pthread_mutex_unlock(&mutex);
+    frame_num+=1;
+    pthread_cond_broadcast(&cond); // Wakeup anybody waiting
   }
+  pthread_mutex_unlock(&mutex);
 }

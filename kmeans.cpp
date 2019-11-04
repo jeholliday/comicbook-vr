@@ -44,6 +44,7 @@ void Kmeans::stop(){
     stopped = true;
     pthread_mutex_unlock(&mutex);
     pthread_join(thread, NULL);
+    pthread_cond_broadcast(&cond); // Wakeup anybody waiting
   }else{
     pthread_mutex_unlock(&mutex);
   }

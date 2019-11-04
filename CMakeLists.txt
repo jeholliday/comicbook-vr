@@ -8,6 +8,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -g")
 
 include_directories(include)
 
+add_executable(live-cpu live.cpp capture.cpp effects.cpp kmeans.cpp kmeans-cpu.cpp ${NVCC_FLAGS})
+target_link_libraries(live-cpu ${OpenCV_LIBS} ${CUDA_curand_LIBRARY})
+
 add_executable(offline-cpu offline.cpp capture.cpp effects.cpp kmeans.cpp kmeans-cpu.cpp ${NVCC_FLAGS})
 target_link_libraries(offline-cpu ${OpenCV_LIBS} ${CUDA_curand_LIBRARY})
 
