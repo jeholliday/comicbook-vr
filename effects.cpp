@@ -12,7 +12,7 @@ Mat Effects::canny(Mat src)
   std::vector<Vec4i> hierarchy;
 
   // Detect edges using canny
-  Canny( src_gray, canny_output, 30000, 45000, 7 );
+  Canny( src_gray, canny_output, 30, 60, 3 );
   // Find contours
   findContours( canny_output, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point(0, 0) );
 
@@ -21,7 +21,7 @@ Mat Effects::canny(Mat src)
   for(size_t i = 0; i< contours.size(); i++ )
   {
     Scalar color = Scalar(255,255,255);
-    drawContours( drawing, contours, i, color, FILLED, 8, hierarchy, 0, Point() );
+    drawContours( drawing, contours, i, color, 1, 8, hierarchy, 0, Point() );
   }
 
   return drawing;
