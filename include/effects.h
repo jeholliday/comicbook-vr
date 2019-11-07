@@ -27,7 +27,7 @@ public:
     Mat* new_image;
   };
 
-  static const int brightness = 150;
+  static const int brightness = 255;
 
 };
 
