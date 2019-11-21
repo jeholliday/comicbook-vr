@@ -19,6 +19,8 @@ public:
 
   static void* posterize_thread(void* arg);
 
+  static Mat halftone(Mat src, Mat output);
+
   struct posterize_args{
     int start_index;
     int end_index;

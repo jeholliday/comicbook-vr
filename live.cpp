@@ -1,6 +1,7 @@
 #include "capture.h"
 #include "effects.h"
 #include "kmeans.h"
+#include <chrono>
 
 #include <csignal>
 #include <opencv2/opencv.hpp>
@@ -57,9 +58,14 @@ int main(int argc, char** argv)
       std::cout << "blur: " << (end-start).count() << " ms" << std::endl;
 
       start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-      Mat combined = Effects::canny_overlay(c, posterized);
+      Mat canny_overlay = Effects::canny_overlay(c, posterized);
       end = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
       std::cout << "overlay: " << (end-start).count() << " ms" << std::endl;
+
+      start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+      Mat combined = Effects::halftone(image, canny_overlay);
+      end = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+      std::cout << "halftone: " << (end-start).count() << " ms" << std::endl;
 
       start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
       resize(combined, combined, combined.size()*2);

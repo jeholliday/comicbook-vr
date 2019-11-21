@@ -113,3 +113,41 @@ void* Effects::posterize_thread(void* arg) {
   }
   return nullptr;
 }
+
+Mat Effects::halftone(Mat src, Mat output) {
+    int nbhdSize = 9;
+
+    Mat gray_src;
+    cvtColor(src,gray_src,COLOR_BGR2GRAY);
+
+    int i = 0; int j;
+    while (i < src.rows - nbhdSize){
+        j = 0;
+        while (j < src.cols - nbhdSize){
+            double nbhdSum = 0;
+            Scalar nbhdSumColor = 0;
+            for (int k = 0; k < nbhdSize; k++){
+                Mat nbhdRow = gray_src.row(i+k).colRange(j, j+nbhdSize).clone();
+                Mat nbhdRowColor = src.row(i+k).colRange(j, j+nbhdSize).clone();
+                nbhdSum += sum(nbhdRow)[0];
+                nbhdSumColor += sum(nbhdRowColor);
+            }
+
+            // Average
+            double average = nbhdSum / nbhdSize;
+            Scalar color_avg = nbhdSumColor / (int(nbhdSize));
+
+            // Scale average into a circle radius intensity
+            double max = (2.5/3) * 0.5 * nbhdSize;
+            double scaled_intensity = max - (average / (255.0 * nbhdSize)) * max;
+
+            // Draw a circle on the image
+            circle(output, Point(j+nbhdSize/2.0, i+nbhdSize/2.0), scaled_intensity,
+                       src.at<Vec3b>(i+nbhdSize/2.0, j+nbhdSize/2.0),-1);
+
+            j += nbhdSize;
+        }
+        i += nbhdSize;
+    }
+    return output;
+}
