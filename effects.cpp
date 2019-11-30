@@ -114,7 +114,7 @@ void* Effects::posterize_thread(void* arg) {
   return nullptr;
 }
 
-Mat Effects::halftone(Mat src, Mat output) {
+void Effects::halftone(Mat src, Mat output) {
     int nbhdSize = 9;
 
     Mat gray_src;
@@ -149,5 +149,4 @@ Mat Effects::halftone(Mat src, Mat output) {
         }
         i += nbhdSize;
     }
-    return output;
 }
