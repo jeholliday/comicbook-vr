@@ -21,12 +21,22 @@ public:
 
   static Mat halftone(Mat src, Mat output);
 
+  static void* halftone_thread(void* arg);
+
   struct posterize_args{
     int start_index;
     int end_index;
     Mat* img;
     Mat* centers;
     Mat* new_image;
+  };
+
+  struct halftone_args{
+      int start_index;
+      int end_index;
+      Mat* img;
+      Mat* gray_img;
+      _InputOutputArray new_image;
   };
 
   static const int brightness = 255;

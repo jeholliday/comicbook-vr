@@ -115,20 +115,39 @@ void* Effects::posterize_thread(void* arg) {
 }
 
 Mat Effects::halftone(Mat src, Mat output) {
-    int nbhdSize = 9;
 
     Mat gray_src;
-    cvtColor(src,gray_src,COLOR_BGR2GRAY);
+    cvtColor(src, gray_src, COLOR_BGR2GRAY);
 
-    int i = 0; int j;
-    while (i < src.rows - nbhdSize){
+    pthread_t threads[NUM_THREADS];
+    struct halftone_args args[NUM_THREADS];
+    for (size_t i = 0; i < NUM_THREADS; ++i) {
+        args[i].start_index = i * src.rows / NUM_THREADS;
+        args[i].end_index = (i+1)*src.rows / NUM_THREADS;
+        args[i].img = &src;
+        args[i].gray_img = &gray_src;
+        args[i].new_image = static_cast<_InputOutputArray>(output);
+        pthread_create(&threads[i], NULL, &halftone_thread, &args[i]);
+    }
+    for (int i = 0; i < NUM_THREADS; ++i) {
+        pthread_join(threads[i], NULL);
+    }
+    return output;
+}
+
+void * Effects::halftone_thread(void * arg) {
+    auto args = (struct halftone_args*)arg;
+    int nbhdSize = 9;
+
+    int j;
+    for (int i = args->start_index; i < args->end_index - nbhdSize; i++){
         j = 0;
-        while (j < src.cols - nbhdSize){
+        while (j < args->img->cols - nbhdSize){
             double nbhdSum = 0;
             Scalar nbhdSumColor = 0;
             for (int k = 0; k < nbhdSize; k++){
-                Mat nbhdRow = gray_src.row(i+k).colRange(j, j+nbhdSize).clone();
-                Mat nbhdRowColor = src.row(i+k).colRange(j, j+nbhdSize).clone();
+                Mat nbhdRow = args->gray_img->row(i+k).colRange(j, j+nbhdSize).clone();
+                Mat nbhdRowColor = args->img->row(i+k).colRange(j, j+nbhdSize).clone();
                 nbhdSum += sum(nbhdRow)[0];
                 nbhdSumColor += sum(nbhdRowColor);
             }
@@ -142,12 +161,12 @@ Mat Effects::halftone(Mat src, Mat output) {
             double scaled_intensity = max - (average / (255.0 * nbhdSize)) * max;
 
             // Draw a circle on the image
-            circle(output, Point(j+nbhdSize/2.0, i+nbhdSize/2.0), scaled_intensity,
-                       src.at<Vec3b>(i+nbhdSize/2.0, j+nbhdSize/2.0),-1);
+            circle(args->new_image, Point(j+nbhdSize/2.0, i+nbhdSize/2.0), scaled_intensity,
+                       args->img->at<Vec3b>(i+nbhdSize/2.0, j+nbhdSize/2.0),-1);
 
             j += nbhdSize;
         }
         i += nbhdSize;
     }
-    return output;
+    return nullptr;
 }
