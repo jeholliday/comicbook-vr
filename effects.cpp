@@ -115,9 +115,10 @@ void* Effects::posterize_thread(void* arg) {
 }
 
 
-void Effects::halftone(Mat src, Mat output) {
+Mat Effects::halftone(Mat src) {
     Mat gray_src;
     cvtColor(src, gray_src, COLOR_BGR2GRAY);
+    Mat new_image(src.rows, src.cols, src.type());
 
     pthread_t threads[NUM_THREADS];
     struct halftone_args args[NUM_THREADS];
@@ -126,12 +127,13 @@ void Effects::halftone(Mat src, Mat output) {
         args[i].end_index = (i+1)*src.rows / NUM_THREADS;
         args[i].img = &src;
         args[i].gray_img = &gray_src;
-        args[i].new_image = static_cast<_InputOutputArray>(output);
+        args[i].new_image = static_cast<_InputOutputArray>(new_image);
         pthread_create(&threads[i], NULL, &halftone_thread, &args[i]);
     }
     for (int i = 0; i < NUM_THREADS; ++i) {
         pthread_join(threads[i], NULL);
     }
+    return new_image;
 }
 
 void * Effects::halftone_thread(void * arg) {
