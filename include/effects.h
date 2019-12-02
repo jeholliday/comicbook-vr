@@ -11,7 +11,7 @@ class Effects {
 public:
   static Mat canny(Mat src);
 
-  static Mat canny_overlay(Mat alpha, Mat back);
+  static Mat canny_overlay(Mat alpha, Mat back, Mat ht);
 
   static Mat blur(Mat src);
 

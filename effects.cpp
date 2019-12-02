@@ -27,10 +27,13 @@ Mat Effects::canny(Mat src)
   return drawing;
 }
 
-Mat Effects::canny_overlay(Mat alpha, Mat back)
+Mat Effects::canny_overlay(Mat alpha, Mat back, Mat ht)
 {
+  // Combine Canny and Halftone
   Mat fore;
   bitwise_not(alpha, fore);
+  fore = addWeighted(fore, 0.5, ht, 0.5, 0);
+
   // Convert Mat to float data type
   fore.convertTo(fore, CV_32FC3);
   back.convertTo(back, CV_32FC3);
