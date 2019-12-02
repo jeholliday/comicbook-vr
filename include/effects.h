@@ -11,8 +11,6 @@ class Effects {
 public:
   static Mat canny(Mat src);
 
-  static Mat canny_overlay(Mat alpha, Mat back, Mat ht);
-
   static Mat blur(Mat src);
 
   static Mat posterize(Mat src, Mat centers);
@@ -38,7 +36,7 @@ public:
       int end_index;
       Mat* img;
       Mat* gray_img;
-      _InputOutputArray new_image;
+      Mat* new_image;
   };
 
   static const int brightness = 255;

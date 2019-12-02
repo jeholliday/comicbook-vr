@@ -46,7 +46,7 @@ int main(int argc, char** argv)
       std::cout << "Shrink: " << (end-start).count() << " ms" << std::endl;
 
       start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-      Mat c = Effects::canny(image);
+      Mat canny_overlay = Effects::canny(image);
       end = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
       std::cout << "Canny: " << (end-start).count() << " ms" << std::endl;
 
@@ -61,12 +61,12 @@ int main(int argc, char** argv)
       std::cout << "blur: " << (end-start).count() << " ms" << std::endl;
 
       start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-      Mat ht = Effects::halftone(image);
+      Mat halftone_overlay = Effects::halftone(image);
       end = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
       std::cout << "halftone: " << (end-start).count() << " ms" << std::endl;
 
       start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-      Mat combined = Effects::canny_overlay(c, posterized, ht);
+      Mat combined = Effects::overlay(canny_overlay, halftone_overlay, posterized);
       end = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
       std::cout << "overlay: " << (end-start).count() << " ms" << std::endl;
 

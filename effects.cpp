@@ -27,12 +27,14 @@ Mat Effects::canny(Mat src)
   return drawing;
 }
 
-Mat Effects::canny_overlay(Mat alpha, Mat back, Mat ht)
+Mat Effects::overlay(Mat canny_overlay, Mat posterized_image, Mat halftone_overlay)
 {
   // Combine Canny and Halftone
+  Mat alpha = canny_overlay;
+  Mat back = posterized_image;
   Mat fore;
-  bitwise_not(alpha, fore);
-  fore = addWeighted(fore, 0.5, ht, 0.5, 0);
+  bitwise_not(canny_overlay, fore);
+  addWeighted(fore, 0.5, halftone_overlay, 0.5, 0, fore);
 
   // Convert Mat to float data type
   fore.convertTo(fore, CV_32FC3);
@@ -130,7 +132,7 @@ Mat Effects::halftone(Mat src) {
         args[i].end_index = (i+1)*src.rows / NUM_THREADS;
         args[i].img = &src;
         args[i].gray_img = &gray_src;
-        args[i].new_image = static_cast<_InputOutputArray>(new_image);
+        args[i].new_image = &new_image;
         pthread_create(&threads[i], NULL, &halftone_thread, &args[i]);
     }
     for (int i = 0; i < NUM_THREADS; ++i) {
@@ -139,7 +141,7 @@ Mat Effects::halftone(Mat src) {
     return new_image;
 }
 
-void * Effects::halftone_thread(void * arg) {
+void* Effects::halftone_thread(void* arg) {
     auto args = (struct halftone_args*)arg;
     int nbhdSize = 9;
 
@@ -165,7 +167,7 @@ void * Effects::halftone_thread(void * arg) {
             double scaled_intensity = max - (average / (255.0 * nbhdSize)) * max;
 
             // Draw a circle on the image
-            circle(args->new_image, Point(j+nbhdSize/2.0, i+nbhdSize/2.0), scaled_intensity,
+            circle(*(args->new_image), Point(j+nbhdSize/2.0, i+nbhdSize/2.0), scaled_intensity,
                        args->img->at<Vec3b>(i+nbhdSize/2.0, j+nbhdSize/2.0),-1);
 
             j += nbhdSize;
