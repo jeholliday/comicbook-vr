@@ -49,6 +49,11 @@ int main(int argc, char** argv)
     end = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
     std::cout << "overlay: " << (end-start).count() << " ms" << std::endl;
 
+    start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+    Effects::halftone(image, combined);
+    end = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+    std::cout << "halftone: " << (end-start).count() << " ms" << std::endl;
+
     imwrite("post.jpg", combined);
   }catch(Exception e){
     std::cout << e.what() << std::endl;

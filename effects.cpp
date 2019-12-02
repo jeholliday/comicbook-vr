@@ -114,8 +114,8 @@ void* Effects::posterize_thread(void* arg) {
   return nullptr;
 }
 
-Mat Effects::halftone(Mat src, Mat output) {
 
+void Effects::halftone(Mat src, Mat output) {
     Mat gray_src;
     cvtColor(src, gray_src, COLOR_BGR2GRAY);
 
@@ -132,7 +132,6 @@ Mat Effects::halftone(Mat src, Mat output) {
     for (int i = 0; i < NUM_THREADS; ++i) {
         pthread_join(threads[i], NULL);
     }
-    return output;
 }
 
 void * Effects::halftone_thread(void * arg) {

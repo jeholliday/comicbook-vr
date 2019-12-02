@@ -27,6 +27,9 @@ int main(int argc, char** argv)
   Kmeans kmeans_src(8, 100, &capture);
   size_t last_frame = 0;
 
+  namedWindow("Name", cv::WINDOW_NORMAL);
+  setWindowProperty("Name", cv::WND_PROP_FULLSCREEN, cv::WINDOW_FULLSCREEN);
+
   while(!stop)
   {
     auto start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
@@ -58,12 +61,12 @@ int main(int argc, char** argv)
       std::cout << "blur: " << (end-start).count() << " ms" << std::endl;
 
       start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-      Mat canny_overlay = Effects::canny_overlay(c, posterized);
+      Mat combined = Effects::canny_overlay(c, posterized);
       end = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
       std::cout << "overlay: " << (end-start).count() << " ms" << std::endl;
 
       start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-      Mat combined = Effects::halftone(image, canny_overlay);
+      Effects::halftone(image, combined);
       end = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
       std::cout << "halftone: " << (end-start).count() << " ms" << std::endl;
 
@@ -72,7 +75,7 @@ int main(int argc, char** argv)
       end = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
       std::cout << "Grow: " << (end-start).count() << " ms" << std::endl;
 
-      imshow("", combined);
+      imshow("Name", combined);
     }catch(Exception e){
       std::cout << e.what() << std::endl;
       break;

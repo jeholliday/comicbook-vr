@@ -19,7 +19,9 @@ public:
 
   static void* posterize_thread(void* arg);
 
-  static Mat halftone(Mat src, Mat output);
+  static void halftone(Mat src, Mat output);
+
+  static Mat overlay(Mat canny_overlay, Mat halftone_overlay, Mat posterized_image);
 
   static void* halftone_thread(void* arg);
 

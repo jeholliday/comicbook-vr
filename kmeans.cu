@@ -84,7 +84,7 @@ static cv::cuda::GpuMat g_data, g_means, g_sums, g_counts;
 
 Mat kmeans(Mat src, Mat means, size_t k, size_t max_iterations){
   Mat data;
-  resize(src, data, src.size()/4); // Down-sample original image
+  resize(src, data, src.size()/2); // Down-sample original image
   data = data.reshape(1, data.total());
   data = data.t();
   data.convertTo(data, CV_32F);
