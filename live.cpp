@@ -61,7 +61,7 @@ int main(int argc, char** argv)
       std::cout << "blur: " << (end-start).count() << " ms" << std::endl;
 
       start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-      Mat ht = Effects::halftone(image, posterized);
+      Mat ht = Effects::halftone(image);
       end = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
       std::cout << "halftone: " << (end-start).count() << " ms" << std::endl;
 
