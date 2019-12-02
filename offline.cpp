@@ -45,14 +45,14 @@ int main(int argc, char** argv)
     std::cout << "blur: " << (end-start).count() << " ms" << std::endl;
 
     start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-    Mat combined = Effects::canny_overlay(c, posterized);
-    end = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-    std::cout << "overlay: " << (end-start).count() << " ms" << std::endl;
-
-    start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-    Effects::halftone(image, combined);
+    Mat ht = Effects::halftone(image, posterized);
     end = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
     std::cout << "halftone: " << (end-start).count() << " ms" << std::endl;
+
+    start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+    Mat combined = Effects::canny_overlay(c, posterized, ht);
+    end = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+    std::cout << "overlay: " << (end-start).count() << " ms" << std::endl;
 
     imwrite("post.jpg", combined);
   }catch(Exception e){
