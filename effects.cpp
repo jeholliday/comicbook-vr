@@ -27,12 +27,14 @@ Mat Effects::canny(Mat src)
   return drawing;
 }
 
-Mat Effects::canny_overlay(Mat alpha, Mat back, Mat ht)
+Mat Effects::overlay(Mat canny_overlay, Mat posterized_image, Mat halftone_overlay)
 {
   // Combine Canny and Halftone
+  Mat alpha = canny_overlay;
+  Mat back = posterized_image;
   Mat fore;
-  bitwise_not(alpha, fore);
-//  fore = addWeighted(fore, 0.5, ht, 0.5, 0);
+  bitwise_not(canny_overlay, fore);
+  addWeighted(fore, 0.5, halftone_overlay, 0.5, 0, fore);
 
   // Convert Mat to float data type
   fore.convertTo(fore, CV_32FC3);
@@ -142,7 +144,7 @@ Mat Effects::halftone(Mat src) {
     return new_image;
 }
 
-void * Effects::halftone_thread(void * arg) {
+void* Effects::halftone_thread(void* arg) {
     auto args = (struct halftone_args*)arg;
     int j;
     for (int i = args->start_index; i < args->end_index; i++){
@@ -162,12 +164,13 @@ void * Effects::halftone_thread(void * arg) {
             Scalar color_avg = nbhdSumColor / (int(NBHD_SIZE));
 
             // Scale average into a circle radius intensity
-            double max = (2.5/3) * 0.5 * NBHD_SIZE;
+            double max = (2.0/3) * 0.5 * NBHD_SIZE;
             double scaled_intensity = max - (average / (255.0 * NBHD_SIZE)) * max;
 
             // Draw a circle on the image
             circle(*(args->new_image), Point(j+NBHD_SIZE/2.0, i+NBHD_SIZE/2.0), scaled_intensity,
                        args->img->at<Vec3b>(i+NBHD_SIZE/2.0, j+NBHD_SIZE/2.0),-1);
+
 
             j += NBHD_SIZE;
         }

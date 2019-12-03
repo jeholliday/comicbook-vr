@@ -19,7 +19,7 @@ struct halftone_thread_args{
 
 static void* halftone_thread(void* arg){
   auto args = (struct halftone_thread_args*) arg;
-  Effects::halftone(*(args->src), *(args->result));
+  *(args->result) = Effects::halftone(*(args->src));
   return NULL;
 }
 
