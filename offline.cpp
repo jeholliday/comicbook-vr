@@ -20,13 +20,16 @@ int main(int argc, char** argv)
   }
 
   Mat image = imread(argv[1]);
+  resize(image, image, Size(640, 480));
 
   auto start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-  try {
-    auto start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+  //try {
+    start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
     Mat canny_overlay = Effects::canny(image);
     auto end = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
     std::cout << "Canny: " << (end-start).count() << " ms" << std::endl;
+
+    imwrite("canny.jpg", canny_overlay);
 
     start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
     Mat means = kmeans(image, Mat(), k, iterations);
@@ -48,19 +51,25 @@ int main(int argc, char** argv)
     end = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
     std::cout << "halftone: " << (end-start).count() << " ms" << std::endl;
 
+    imwrite("halftone.jpg", halftone_overlay);
+
+    imwrite("posterized.jpg", posterized);
+    imwrite("halftone-post.jpg", halftone_overlay);
+
     start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
     Mat combined = Effects::overlay(canny_overlay, halftone_overlay, posterized);
     end = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
     std::cout << "overlay: " << (end-start).count() << " ms" << std::endl;
 
     imwrite("post.jpg", combined);
-  }catch(Exception e){
+    imwrite("halftone-post-post.jpg", halftone_overlay);
+  /*}catch(Exception e){
     std::cout << e.what() << std::endl;
   }catch(...){
 
-  }
+  }*/
 
-  auto end = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+  end = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
   std::cerr << "Frame time: " << (end - start).count() << std::endl << std::endl;
 
   return 0;

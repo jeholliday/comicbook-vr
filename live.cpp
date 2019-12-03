@@ -50,10 +50,14 @@ int main(int argc, char** argv)
       end = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
       std::cout << "Canny: " << (end-start).count() << " ms" << std::endl;
 
+      imwrite("canny.jpg", canny_overlay);
+
       start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
       Mat posterized = Effects::posterize(image, kmeans_src.getMeans());
       end = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
       std::cout << "posterized: " << (end-start).count() << " ms" << std::endl;
+
+      imwrite("posterized.jpg", posterized);
 
       start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
       posterized = Effects::blur(posterized);
@@ -64,6 +68,8 @@ int main(int argc, char** argv)
       Mat halftone_overlay = Effects::halftone(image);
       end = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
       std::cout << "halftone: " << (end-start).count() << " ms" << std::endl;
+
+      imwrite("halftone.jpg", halftone_overlay);
 
       start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
       Mat combined = Effects::overlay(canny_overlay, halftone_overlay, posterized);
