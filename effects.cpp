@@ -32,7 +32,7 @@ Mat Effects::canny_overlay(Mat alpha, Mat back, Mat ht)
   // Combine Canny and Halftone
   Mat fore;
   bitwise_not(alpha, fore);
-  fore = addWeighted(fore, 0.5, ht, 0.5, 0);
+//  fore = addWeighted(fore, 0.5, ht, 0.5, 0);
 
   // Convert Mat to float data type
   fore.convertTo(fore, CV_32FC3);
@@ -123,17 +123,20 @@ Mat Effects::halftone(Mat src) {
     cvtColor(src, gray_src, COLOR_BGR2GRAY);
     Mat new_image(src.rows, src.cols, src.type());
 
-    pthread_t threads[NUM_THREADS];
-    struct halftone_args args[NUM_THREADS];
-    for (size_t i = 0; i < NUM_THREADS; ++i) {
-        args[i].start_index = i * src.rows / NUM_THREADS;
-        args[i].end_index = (i+1)*src.rows / NUM_THREADS;
+    pthread_t threads[NUM_THREADS_HALFTONE];
+    struct halftone_args args[NUM_THREADS_HALFTONE];
+    for (size_t i = 0; i < NUM_THREADS_HALFTONE; ++i) {
+        args[i].start_index = i * src.rows / NUM_THREADS_HALFTONE;
+        args[i].end_index = (i + 1) * src.rows / NUM_THREADS_HALFTONE;
+        if (i == NUM_THREADS_HALFTONE - 1){
+            args[i].end_index -= 32;
+        }
         args[i].img = &src;
         args[i].gray_img = &gray_src;
-        args[i].new_image = static_cast<_InputOutputArray>(new_image);
+        args[i].new_image = &new_image;
         pthread_create(&threads[i], NULL, &halftone_thread, &args[i]);
     }
-    for (int i = 0; i < NUM_THREADS; ++i) {
+    for (int i = 0; i < NUM_THREADS_HALFTONE; ++i) {
         pthread_join(threads[i], NULL);
     }
     return new_image;
@@ -141,36 +144,34 @@ Mat Effects::halftone(Mat src) {
 
 void * Effects::halftone_thread(void * arg) {
     auto args = (struct halftone_args*)arg;
-    int nbhdSize = 9;
-
     int j;
-    for (int i = args->start_index; i < args->end_index - nbhdSize; i++){
+    for (int i = args->start_index; i < args->end_index; i++){
         j = 0;
-        while (j < args->img->cols - nbhdSize){
+        while (j < args->img->cols){
             double nbhdSum = 0;
             Scalar nbhdSumColor = 0;
-            for (int k = 0; k < nbhdSize; k++){
-                Mat nbhdRow = args->gray_img->row(i+k).colRange(j, j+nbhdSize).clone();
-                Mat nbhdRowColor = args->img->row(i+k).colRange(j, j+nbhdSize).clone();
+            for (int k = 0; k < NBHD_SIZE; k++){
+                Mat nbhdRow = args->gray_img->row(i+k).colRange(j, j+NBHD_SIZE).clone();
+                Mat nbhdRowColor = args->img->row(i+k).colRange(j, j+NBHD_SIZE).clone();
                 nbhdSum += sum(nbhdRow)[0];
                 nbhdSumColor += sum(nbhdRowColor);
             }
 
             // Average
-            double average = nbhdSum / nbhdSize;
-            Scalar color_avg = nbhdSumColor / (int(nbhdSize));
+            double average = nbhdSum / NBHD_SIZE;
+            Scalar color_avg = nbhdSumColor / (int(NBHD_SIZE));
 
             // Scale average into a circle radius intensity
-            double max = (2.5/3) * 0.5 * nbhdSize;
-            double scaled_intensity = max - (average / (255.0 * nbhdSize)) * max;
+            double max = (2.5/3) * 0.5 * NBHD_SIZE;
+            double scaled_intensity = max - (average / (255.0 * NBHD_SIZE)) * max;
 
             // Draw a circle on the image
-            circle(args->new_image, Point(j+nbhdSize/2.0, i+nbhdSize/2.0), scaled_intensity,
-                       args->img->at<Vec3b>(i+nbhdSize/2.0, j+nbhdSize/2.0),-1);
+            circle(*(args->new_image), Point(j+NBHD_SIZE/2.0, i+NBHD_SIZE/2.0), scaled_intensity,
+                       args->img->at<Vec3b>(i+NBHD_SIZE/2.0, j+NBHD_SIZE/2.0),-1);
 
-            j += nbhdSize;
+            j += NBHD_SIZE;
         }
-        i += nbhdSize;
+        i += NBHD_SIZE;
     }
     return nullptr;
 }

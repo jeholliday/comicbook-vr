@@ -1,7 +1,12 @@
 #ifndef VRVISOR_EFFECTS_H
 #define VRVISOR_EFFECTS_H
 
+#define HALF_IMG_ROWS 240
+#define NBHD_SIZE 16
 #define NUM_THREADS 8
+
+// # of threads should be HALF_IMG_ROWS / NBHD_SIZE
+#define NUM_THREADS_HALFTONE 30
 
 #include <opencv2/opencv.hpp>
 
@@ -38,7 +43,7 @@ public:
       int end_index;
       Mat* img;
       Mat* gray_img;
-      _InputOutputArray new_image;
+      Mat* new_image;
   };
 
   static const int brightness = 255;
