@@ -6,32 +6,32 @@
 static void* capture_thread(void* arg);
 
 struct Frame {
-  cv::Mat image;
-  size_t frame_num;
+    cv::Mat image;
+    size_t frame_num;
 };
 
-class ImageCapture{
+class ImageCapture {
 public:
-  ImageCapture(int id);
+    ImageCapture(int id);
 
-  ~ImageCapture();
+    ~ImageCapture();
 
-  struct Frame getFrame(size_t lastFrame);
+    struct Frame getFrame(size_t lastFrame);
 
-  void stop();
+    void stop();
 
 private:
-  pthread_t thread;
+    pthread_t thread;
 
 protected:
-  cv::VideoCapture cap;
-  pthread_mutex_t mutex;
-  pthread_cond_t cond;
-  cv::Mat image;
-  size_t frame_num;
-  bool stopped;
+    cv::VideoCapture cap;
+    pthread_mutex_t mutex;
+    pthread_cond_t cond;
+    cv::Mat image;
+    size_t frame_num;
+    bool stopped;
 
-  friend void* capture_thread(void* arg);
+    friend void* capture_thread(void* arg);
 };
 
 #endif // VRVISOR_CAPTURE_H
