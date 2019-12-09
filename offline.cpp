@@ -4,6 +4,11 @@
 
 #include <opencv2/opencv.hpp>
 
+/**
+ * offline.cpp
+ * Process single image into comicbook image.
+ */
+
 int main(int argc, char** argv)
 {
     if (argc < 2) {

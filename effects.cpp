@@ -1,11 +1,15 @@
 #include "effects.h"
 #include "timing.h"
 
+/**
+ * Perform canny edge detection
+ * @param src Source Image
+ * @return Mat with detected edges
+ */
 Mat Effects::canny(Mat src)
 {
     START_TIMING();
     Mat src_gray, detected_edges;
-
     cvtColor(src, src_gray, COLOR_BGR2GRAY);
 
     cv::blur(src_gray, detected_edges, Size(3, 3));
@@ -15,6 +19,22 @@ Mat Effects::canny(Mat src)
     return detected_edges;
 }
 
+/**
+ * Helper method for blurring an image
+ * @param src Source Image
+ * @return Blurred Image
+ */
+Mat Effects::blur(Mat src)
+{
+    Mat new_image(src);
+    GaussianBlur(src, new_image, Size(3, 3), 0, 0);
+    return new_image;
+}
+
+/**
+ * Overlay Canny edges and halftone dots onto a posterized image
+ * @return Combined image
+ */
 Mat Effects::overlay(Mat canny_overlay, Mat halftone_overlay, Mat posterized_image)
 {
     START_TIMING();
@@ -34,13 +54,12 @@ Mat Effects::overlay(Mat canny_overlay, Mat halftone_overlay, Mat posterized_ima
     return out;
 }
 
-Mat Effects::blur(Mat src)
-{
-    Mat new_image(src);
-    GaussianBlur(src, new_image, Size(3, 3), 0, 0);
-    return new_image;
-}
-
+/**
+ * Color an image using a reduced color set
+ * @param src Source image
+ * @param centers Discrete colors
+ * @return Posterized image
+ */
 Mat Effects::posterize(Mat src, Mat centers)
 {
     START_TIMING();
@@ -71,6 +90,11 @@ Mat Effects::posterize(Mat src, Mat centers)
     return new_image;
 }
 
+/**
+ * Thread to posterize a subset of an image
+ * @param arg posterize_args*
+ * @return NULL
+ */
 void* Effects::posterize_thread(void* arg)
 {
     auto args = (struct posterize_args*)arg;
@@ -95,6 +119,11 @@ void* Effects::posterize_thread(void* arg)
     return nullptr;
 }
 
+/**
+ * Create halftone effect from an image
+ * @param src Source image
+ * @return Image with halftone dots
+ */
 Mat Effects::halftone(Mat src)
 {
     START_TIMING();
@@ -119,6 +148,11 @@ Mat Effects::halftone(Mat src)
     return new_image;
 }
 
+/**
+ * Thread to perform halftone on a subset of an image
+ * @param arg halftone_args*
+ * @return NULL
+ */
 void* Effects::halftone_thread(void* arg)
 {
     auto args = (struct halftone_args*)arg;

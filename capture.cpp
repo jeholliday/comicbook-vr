@@ -1,25 +1,40 @@
 #include "capture.h"
 
+/**
+ * Internal thread for ImageCapture to continuous capture images
+ * @param arg ImageCapture* to parent object
+ * @return NULL
+ */
 void* capture_thread(void* arg)
 {
     ImageCapture* capture = (ImageCapture*)arg;
+    pthread_mutex_lock(&(capture->mutex));
+    bool stop = capture->stopped;
+    pthread_mutex_unlock(&(capture->mutex));
 
-    while (!capture->stopped) {
+    // Continuously process until stopped
+    while (!stop) {
         cv::Mat image;
         capture->cap >> image;
 
         cv::resize(image, image, cv::Size(640, 480));
         cv::flip(image, image, -1);
 
+        // Lock mutex before copying new frame to ImageCapture
         pthread_mutex_lock(&(capture->mutex));
         image.copyTo(capture->image);
         capture->frame_num += 1;
-        pthread_cond_broadcast(&(capture->cond));
+        stop = capture->stopped;
+        pthread_cond_broadcast(&(capture->cond)); // Signal any waiting threads
         pthread_mutex_unlock(&(capture->mutex));
     }
     return NULL;
 }
 
+/**
+ * Construct with a given camera id
+ * @param id Camera id
+ */
 ImageCapture::ImageCapture(int id)
     : cap(id)
     , frame_num(0)
@@ -34,6 +49,11 @@ ImageCapture::ImageCapture(int id)
 
 ImageCapture::~ImageCapture() { stop(); }
 
+/**
+ * Return the latest frame. Only block if a new frame isn't available.
+ * @param lastFrame Frame id of last image returned
+ * @return Next frame
+ */
 struct Frame ImageCapture::getFrame(size_t last_frame)
 {
     pthread_mutex_lock(&mutex);
@@ -47,6 +67,9 @@ struct Frame ImageCapture::getFrame(size_t last_frame)
     return { latest, frame };
 }
 
+/**
+ * Stop internal thread and free VideoCapture
+ */
 void ImageCapture::stop()
 {
     pthread_mutex_lock(&mutex);

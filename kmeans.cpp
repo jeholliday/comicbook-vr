@@ -1,5 +1,10 @@
 #include "kmeans.h"
 
+/**
+ * Thread to continuously calculate color set
+ * @param arg Kmeans* to parent object
+ * @return NULL
+ */
 void* kmeans_thread(void* arg)
 {
     Kmeans* parent = (Kmeans*)arg;
@@ -10,6 +15,7 @@ void* kmeans_thread(void* arg)
         last_frame = frame.frame_num;
         cv::Mat new_means = kmeans(frame.image, parent->means, parent->k, parent->num_iterations);
 
+        // Lock mutex before copying latest means to Kmeans object
         pthread_mutex_lock(&(parent->mutex));
         new_means.copyTo(parent->means);
         pthread_cond_broadcast(&(parent->cond));
@@ -17,6 +23,10 @@ void* kmeans_thread(void* arg)
     }
 }
 
+/**
+ * Get latest calculated means
+ * @return Latest means
+ */
 Kmeans::Kmeans(int k, int num_iterations, ImageCapture* src)
     : k(k)
     , num_iterations(num_iterations)
@@ -30,6 +40,10 @@ Kmeans::Kmeans(int k, int num_iterations, ImageCapture* src)
 
 Kmeans::~Kmeans() { stop(); }
 
+/**
+ * Get latest calculated means
+ * @return Latest means
+ */
 cv::Mat Kmeans::getMeans()
 {
     pthread_mutex_lock(&mutex);
@@ -42,6 +56,9 @@ cv::Mat Kmeans::getMeans()
     return latest;
 }
 
+/**
+ * Stop internal thread
+ */
 void Kmeans::stop()
 {
     pthread_mutex_lock(&mutex);

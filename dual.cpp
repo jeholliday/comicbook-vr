@@ -1,11 +1,17 @@
 #include "capture.h"
-#include "effects.h"
 #include "kmeans.h"
 #include "pipeline.h"
 #include "timing.h"
 
 #include <csignal>
 #include <opencv2/opencv.hpp>
+
+/**
+ * dual.cpp
+ * Process images from two cameras at the same time using the pipeline class.
+ */
+
+using namespace cv;
 
 bool stop = false;
 

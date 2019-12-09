@@ -12,11 +12,24 @@
 
 using namespace cv;
 
+/**
+ * GPU Method for finding distance between two 3D points
+ * @return Distance
+ */
 __device__ float squared_l3_distance(float x_1, float y_1, float z_1, float x_2, float y_2, float z_2)
 {
     return (x_1 - x_2) * (x_1 - x_2) + (y_1 - y_2) * (y_1 - y_2) + (z_1 - z_2) * (z_1 - z_2);
 }
 
+/**
+ * GPU Method for assigning data points to a mean
+ * @param data Source data
+ * @param row_size Number of data points
+ * @param means Current means
+ * @param new_sums Sum of all values assigned to each mean
+ * @param k Number of means
+ * @param counts Counts of number of points assigned to each mean
+ */
 __global__ void assign_clusters(const cv::cuda::PtrStepSzf data, int row_size, cv::cuda::PtrStepSzf means, cv::cuda::PtrStepSzf new_sums,
     int k, cv::cuda::PtrStepSz<int32_t> counts)
 {
@@ -29,6 +42,7 @@ __global__ void assign_clusters(const cv::cuda::PtrStepSzf data, int row_size, c
     const float y = data(1, index);
     const float z = data(2, index);
 
+    // Compute closest mean for each point
     float best_distance = FLT_MAX;
     int best_cluster = 0;
     for (int cluster = 0; cluster < k; ++cluster) {
@@ -45,20 +59,34 @@ __global__ void assign_clusters(const cv::cuda::PtrStepSzf data, int row_size, c
     atomicAdd(&counts(0, best_cluster), 1);
 }
 
+/**
+ * GPU method for computing new means and resetting for next iteration
+ * @param means Current means
+ * @param new_sums Sum of all values assigned to each mean
+ * @param counts Counts of number of points assigned to each mean
+ */
 __global__ void compute_new_means_and_reset(cv::cuda::PtrStepSzf means, cv::cuda::PtrStepSzf new_sums, cv::cuda::PtrStepSz<int32_t> counts)
 {
+    // Compute new mean as average of all points assigned to previous mean
     const int cluster = threadIdx.x;
     const int count = max(1, counts[cluster]);
     means(0, cluster) = new_sums(0, cluster) / count;
     means(1, cluster) = new_sums(1, cluster) / count;
     means(2, cluster) = new_sums(2, cluster) / count;
 
+    // Reset sums to zero for next iteration
     new_sums(0, cluster) = 0;
     new_sums(1, cluster) = 0;
     new_sums(2, cluster) = 0;
     counts(0, cluster) = 0;
 }
 
+/**
+ * Choose k random data points from source image as starting means
+ * @param src Source image
+ * @param k Number of colors
+ * @return Random color set
+ */
 static Mat generate_random_means(Mat src, size_t k)
 {
     Mat img = src.reshape(3, 1);
@@ -77,6 +105,14 @@ static Mat generate_random_means(Mat src, size_t k)
 
 static cv::cuda::GpuMat g_data, g_means, g_sums, g_counts;
 
+/**
+ * GPU implementation of kmeans algorithm
+ * @param src Source Image
+ * @param means Starting point for discrete colors
+ * @param k Number of discrete colors
+ * @param max_iterations Number of iterations to improve means
+ * @return New color set
+ */
 Mat kmeans(Mat src, Mat means, size_t k, size_t max_iterations)
 {
     Mat data;
@@ -114,7 +150,7 @@ Mat kmeans(Mat src, Mat means, size_t k, size_t max_iterations)
         Mat new_means;
         g_means.download(new_means);
         if (norm(means, new_means) < 1.0) {
-            // Stop early if less than threshold
+            // Stop early if change in means is less than threshold
             break;
         }
         means = new_means;

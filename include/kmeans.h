@@ -5,8 +5,21 @@
 
 #include <opencv2/opencv.hpp>
 
+/**
+ * Forward definition of kmeans algorithm to allow multiple implementations
+ * @param src Source Image
+ * @param means Starting point for discrete colors
+ * @param k Number of discrete colors
+ * @param max_iterations Number of iterations to improve means
+ * @return New color set
+ */
 extern cv::Mat kmeans(cv::Mat src, cv::Mat means, size_t k, size_t max_iterations);
 
+/**
+ * Thread to continuously calculate color set
+ * @param arg Kmeans* to parent object
+ * @return NULL
+ */
 static void* kmeans_thread(void* arg);
 
 class Kmeans {
@@ -15,8 +28,15 @@ public:
 
     ~Kmeans();
 
+    /**
+     * Get latest calculated means
+     * @return Latest means
+     */
     cv::Mat getMeans();
 
+    /**
+     * Stop internal thread
+     */
     void stop();
 
 private:

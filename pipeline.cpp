@@ -1,11 +1,11 @@
 #include "pipeline.h"
 #include "effects.h"
 
-struct canny_thread_args {
-    cv::Mat* src;
-    cv::Mat* result;
-};
-
+/**
+ * Thread for performing Canny edge detection asynchronously
+ * @param arg canny_thread_args*
+ * @return NULL
+ */
 static void* canny_thread(void* arg)
 {
     auto args = (struct canny_thread_args*)arg;
@@ -13,11 +13,11 @@ static void* canny_thread(void* arg)
     return NULL;
 }
 
-struct halftone_thread_args {
-    cv::Mat* src;
-    cv::Mat* result;
-};
-
+/**
+ * Thread for performing Halftone asynchronously
+ * @param arg halftone_thread_args*
+ * @return NULL
+ */
 static void* halftone_thread(void* arg)
 {
     auto args = (struct halftone_thread_args*)arg;
@@ -25,12 +25,11 @@ static void* halftone_thread(void* arg)
     return NULL;
 }
 
-struct posterized_thread_args {
-    cv::Mat* src;
-    cv::Mat* centers;
-    cv::Mat* result;
-};
-
+/**
+ * Thread for performing posterize asynchronously
+ * @param arg posterized_thread_args*
+ * @return NULL
+ */
 static void* posterized_thread(void* arg)
 {
     auto args = (struct posterized_thread_args*)arg;
@@ -38,6 +37,12 @@ static void* posterized_thread(void* arg)
     return NULL;
 }
 
+/**
+ * Process image with Canny, Halftone, and Posterize all asynchronously
+ * @param src Source Image
+ * @param means Discrete colors
+ * @return Comicbook image
+ */
 static cv::Mat process_image(cv::Mat src, cv::Mat means)
 {
     cv::Mat image(src, Range::all(), Range(120, 520));
@@ -62,6 +67,11 @@ static cv::Mat process_image(cv::Mat src, cv::Mat means)
     return result;
 }
 
+/**
+ * Thread for processing an image asynchronously
+ * @param arg Pipeline* to parent object
+ * @return NULL
+ */
 static void* pipeline_thread(void* arg)
 {
     Pipeline* pipe = (Pipeline*)arg;
@@ -75,6 +85,8 @@ static void* pipeline_thread(void* arg)
     pipe->running = false;
     pthread_cond_signal(&(pipe->cond));
     pthread_mutex_unlock(&(pipe->mutex));
+
+    return NULL;
 }
 
 Pipeline::Pipeline(ImageCapture* capture, Kmeans* kmeans_src)
@@ -89,6 +101,9 @@ Pipeline::Pipeline(ImageCapture* capture, Kmeans* kmeans_src)
 
 Pipeline::~Pipeline() { join(); }
 
+/**
+ * Take latest image and means and process an image
+ */
 void Pipeline::start()
 {
     pthread_mutex_lock(&mutex);
@@ -99,6 +114,10 @@ void Pipeline::start()
     pthread_mutex_unlock(&mutex);
 }
 
+/**
+ * Wait for latest processing image
+ * @return Processed image
+ */
 cv::Mat Pipeline::join()
 {
     Mat ret;

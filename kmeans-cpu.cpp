@@ -1,5 +1,13 @@
 #include <opencv2/opencv.hpp>
 
+/**
+ * CPU only implementation of kmeans algorithm
+ * @param src Source Image
+ * @param means Starting point for discrete colors
+ * @param k Number of discrete colors
+ * @param max_iterations Number of iterations to improve means
+ * @return New color set
+ */
 cv::Mat kmeans(cv::Mat src, cv::Mat means, size_t k, size_t max_iterations)
 {
     cv::Mat samples;

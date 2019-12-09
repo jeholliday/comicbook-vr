@@ -6,6 +6,11 @@
 #include <csignal>
 #include <opencv2/opencv.hpp>
 
+/**
+ * live.cpp
+ * Process images in realtime from a single camera.
+ */
+
 bool stop = false;
 
 void stop_handler(int s) { stop = true; }
