@@ -1,18 +1,23 @@
 #include "effects.h"
+#include "timing.h"
 
 Mat Effects::canny(Mat src)
 {
+    START_TIMING();
     Mat src_gray, detected_edges;
 
     cvtColor(src, src_gray, COLOR_BGR2GRAY);
 
     cv::blur(src_gray, detected_edges, Size(3, 3));
     Canny(detected_edges, detected_edges, 30, 60, 3);
+
+    STOP_TIMING("Canny");
     return detected_edges;
 }
 
 Mat Effects::overlay(Mat canny_overlay, Mat halftone_overlay, Mat posterized_image)
 {
+    START_TIMING();
     Mat fore;
     Mat halftone_mask;
     cvtColor(halftone_overlay, halftone_mask, COLOR_BGR2GRAY);
@@ -25,6 +30,7 @@ Mat Effects::overlay(Mat canny_overlay, Mat halftone_overlay, Mat posterized_ima
     posterized_image.copyTo(out, fore);
     add(halftone_overlay, out, out);
 
+    STOP_TIMING("Overlay");
     return out;
 }
 
@@ -32,12 +38,12 @@ Mat Effects::blur(Mat src)
 {
     Mat new_image(src);
     GaussianBlur(src, new_image, Size(3, 3), 0, 0);
-
     return new_image;
 }
 
 Mat Effects::posterize(Mat src, Mat centers)
 {
+    START_TIMING();
     Mat img;
     src.convertTo(img, CV_32FC3);
     img = img.reshape(3, img.total());
@@ -60,6 +66,8 @@ Mat Effects::posterize(Mat src, Mat centers)
         pthread_join(threads[i], NULL);
     }
     new_image = new_image.reshape(3, src.rows);
+    new_image = Effects::blur(new_image);
+    STOP_TIMING("Posterize");
     return new_image;
 }
 
@@ -89,6 +97,7 @@ void* Effects::posterize_thread(void* arg)
 
 Mat Effects::halftone(Mat src)
 {
+    START_TIMING();
     Mat gray_src;
     cvtColor(src, gray_src, COLOR_BGR2GRAY);
     Mat new_image = cv::Mat::zeros(src.size(), src.type());
@@ -106,6 +115,7 @@ Mat Effects::halftone(Mat src)
     for (int i = 0; i < NUM_THREADS; ++i) {
         pthread_join(threads[i], NULL);
     }
+    STOP_TIMING("Halftone");
     return new_image;
 }
 

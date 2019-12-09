@@ -1,5 +1,6 @@
 #include "effects.h"
 #include "kmeans.h"
+#include "timing.h"
 
 #include <opencv2/opencv.hpp>
 
@@ -20,45 +21,19 @@ int main(int argc, char** argv)
     Mat image = imread(argv[1]);
     resize(image, image, Size(640, 480));
 
-    auto start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+    START_TIMING();
     try {
-        auto start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
         Mat canny_overlay = Effects::canny(image);
-        auto end = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-        std::cout << "Canny: " << (end - start).count() << " ms" << std::endl;
-
-        start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
         Mat means = kmeans(image, Mat(), k, iterations);
-        end = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-        std::cout << "kmeans: " << (end - start).count() << " ms" << std::endl;
-
-        start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
         Mat posterized = Effects::posterize(image, means);
-        end = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-        std::cout << "posterized: " << (end - start).count() << " ms" << std::endl;
-
-        start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-        posterized = Effects::blur(posterized);
-        end = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-        std::cout << "blur: " << (end - start).count() << " ms" << std::endl;
-
-        start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
         Mat halftone_overlay = Effects::halftone(image);
-        end = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-        std::cout << "halftone: " << (end - start).count() << " ms" << std::endl;
-
-        start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
         Mat combined = Effects::overlay(canny_overlay, halftone_overlay, posterized);
-        end = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-        std::cout << "overlay: " << (end - start).count() << " ms" << std::endl;
-
+        imwrite("post.jpg", combined);
     } catch (Exception& e) {
         std::cout << e.what() << std::endl;
     } catch (...) {
+        std::cout << "Caught unexpected exception!" << std::endl;
     }
-
-    auto end = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-    std::cerr << "Frame time: " << (end - start).count() << std::endl << std::endl;
-
+    STOP_TIMING("Frame Time")
     return 0;
 }

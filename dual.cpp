@@ -2,6 +2,7 @@
 #include "effects.h"
 #include "kmeans.h"
 #include "pipeline.h"
+#include "timing.h"
 
 #include <csignal>
 #include <opencv2/opencv.hpp>
@@ -12,13 +13,11 @@ void stop_handler(int s) { stop = true; }
 
 int main(int argc, char** argv)
 {
-
+    // Catch any stop signals to ensure proper cleanup
     struct sigaction sigIntHandler;
-
     sigIntHandler.sa_handler = stop_handler;
     sigemptyset(&sigIntHandler.sa_mask);
     sigIntHandler.sa_flags = 0;
-
     sigaction(SIGINT, &sigIntHandler, NULL);
 
     ImageCapture left_cap(0);
@@ -26,15 +25,15 @@ int main(int argc, char** argv)
 
     Kmeans kmeans_src(8, 100, &left_cap);
 
-    namedWindow("Window", cv::WINDOW_NORMAL);
-    setWindowProperty("Window", cv::WND_PROP_FULLSCREEN, cv::WINDOW_FULLSCREEN);
-
     Pipeline left_pipeline(&left_cap, &kmeans_src);
     Pipeline right_pipeline(&right_cap, &kmeans_src);
 
-    while (!stop) {
-        auto start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+    // Make window show up fullscreen
+    namedWindow("Window", cv::WINDOW_NORMAL);
+    setWindowProperty("Window", cv::WND_PROP_FULLSCREEN, cv::WINDOW_FULLSCREEN);
 
+    while (!stop) {
+        START_TIMING();
         try {
             left_pipeline.start();
             right_pipeline.start();
@@ -46,7 +45,6 @@ int main(int argc, char** argv)
 
             Mat final;
             cv::hconcat(array, 2, final);
-
             imshow("Window", final);
         } catch (Exception& e) {
             std::cout << e.what() << std::endl;
@@ -54,10 +52,7 @@ int main(int argc, char** argv)
         } catch (...) {
             break;
         }
-
-        auto end = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-
-        std::cerr << "Frame time: " << (end - start).count() << std::endl << std::endl;
+        STOP_TIMING("Frame Time");
 
         if (waitKey(1) == 27)
             break; // stop capturing by pressing ESC
