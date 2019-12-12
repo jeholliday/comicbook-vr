@@ -28,11 +28,14 @@ int main(int argc, char** argv)
 
     START_TIMING();
     try {
+        // Generate effects sequentially
         Mat canny_overlay = Effects::canny(image);
         Mat means = kmeans(image, Mat(), k, iterations);
         Mat posterized = Effects::posterize(image, means);
         Mat halftone_overlay = Effects::halftone(image);
+        // Combine effects
         Mat combined = Effects::overlay(canny_overlay, halftone_overlay, posterized);
+        // Write result to file
         imwrite("post.jpg", combined);
     } catch (Exception& e) {
         std::cout << e.what() << std::endl;

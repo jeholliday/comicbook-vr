@@ -44,6 +44,7 @@ ImageCapture::ImageCapture(int id)
     pthread_cond_init(&cond, NULL);
     pthread_create(&thread, NULL, &capture_thread, this);
 
+    // Set camera image capture FPS
     cap.set(cv::CAP_PROP_FPS, 30);
 }
 
@@ -57,6 +58,7 @@ ImageCapture::~ImageCapture() { stop(); }
 struct Frame ImageCapture::getFrame(size_t last_frame)
 {
     pthread_mutex_lock(&mutex);
+    // Block if current frame matches last_frame
     while (last_frame == frame_num) {
         pthread_cond_wait(&cond, &mutex);
     }

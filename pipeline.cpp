@@ -50,6 +50,7 @@ static cv::Mat process_image(cv::Mat src, cv::Mat means)
     cv::Mat canny_overlay, halftone_overlay, posterized_image;
     pthread_t canny_t, halftone_t, posterized_t;
 
+    // Create thread for each effect
     struct canny_thread_args canny_args = { &image, &canny_overlay };
     pthread_create(&canny_t, NULL, &canny_thread, &canny_args);
 
@@ -59,10 +60,12 @@ static cv::Mat process_image(cv::Mat src, cv::Mat means)
     struct posterized_thread_args posterized_args = { &image, &means, &posterized_image };
     pthread_create(&posterized_t, NULL, &posterized_thread, &posterized_args);
 
+    // Join threads
     pthread_join(canny_t, NULL);
     pthread_join(halftone_t, NULL);
     pthread_join(posterized_t, NULL);
 
+    // Overlay effects before returning result
     Mat result = Effects::overlay(canny_overlay, halftone_overlay, posterized_image);
     return result;
 }

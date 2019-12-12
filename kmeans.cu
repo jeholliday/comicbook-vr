@@ -95,6 +95,7 @@ static Mat generate_random_means(Mat src, size_t k)
     std::mt19937 rng(std::random_device {}());
     std::uniform_int_distribution<int> distribution(0, img.cols);
 
+    // Pick k random pixels from source image
     Mat centers(k, 1, CV_32FC3);
     for (int i = 0; i < k; ++i) {
         centers.at<Vec3f>(i, 0) = img.at<Vec3f>(0, distribution(rng));
@@ -122,6 +123,7 @@ Mat kmeans(Mat src, Mat means, size_t k, size_t max_iterations)
     data.convertTo(data, CV_32F);
     g_data.upload(data);
 
+    // Create random starting means of no starting point was given
     if (means.empty()) {
         means = generate_random_means(src, k);
     }

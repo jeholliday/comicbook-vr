@@ -134,6 +134,7 @@ Mat Effects::halftone(Mat src)
     pthread_t threads[NUM_THREADS];
     struct halftone_args args[NUM_THREADS];
     for (size_t i = 0; i < NUM_THREADS; ++i) {
+        // Divide picture up evenly between threads
         args[i].start_index = i * src.rows / NBHD_SIZE / NUM_THREADS;
         args[i].end_index = (i + 1) * src.rows / NBHD_SIZE / NUM_THREADS;
         args[i].src = &src;
@@ -159,6 +160,7 @@ void* Effects::halftone_thread(void* arg)
 
     for (int i = NBHD_SIZE * args->start_index; i < NBHD_SIZE * args->end_index; i += NBHD_SIZE) {
         for (int j = 0; j + NBHD_SIZE < args->src->cols; j += NBHD_SIZE) {
+            // Sum the intensity of the neighborhood
             double nbhdSum = 0;
             for (int k = 0; k < NBHD_SIZE; k++) {
                 Mat nbhdRow = args->gray_img->row(i + k).colRange(j, j + NBHD_SIZE).clone();

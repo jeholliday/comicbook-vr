@@ -47,6 +47,7 @@ Kmeans::~Kmeans() { stop(); }
 cv::Mat Kmeans::getMeans()
 {
     pthread_mutex_lock(&mutex);
+    // Block only if no means have yet been calculated
     while (means.empty()) {
         pthread_cond_wait(&cond, &mutex);
     }
