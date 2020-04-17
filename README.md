@@ -1,5 +1,9 @@
 # Comic Book VR
-Realtime vision processing to turn a camera feed into a comic book
+Realtime vision processing to turn a camera feed into a comic book.
+
+![Comic GIF](cartoonvr_gif.gif)
+
+![VR Headset](vr_headset.jpg)
 
 ## How to Build
 ```
